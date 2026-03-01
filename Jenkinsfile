@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        label 'built-in'
-    }
+    agent any
 
     options {
         timestamps()
@@ -9,15 +7,9 @@ pipeline {
 
     stages {
 
-        stage('Sanity Check') {
+        stage('Checkout') {
             steps {
-                sh '''
-                echo "===== SYSTEM INFO ====="
-                whoami
-                uname -a
-                pwd
-                ls -la
-                '''
+                checkout scm
             }
         }
 
@@ -32,35 +24,29 @@ pipeline {
 
         stage('Build Images') {
             steps {
-                sh '''
-                docker compose build
-                '''
+                sh 'docker compose build'
             }
         }
 
-        stage('Run Containers') {
+        stage('Deploy Containers') {
             steps {
-                sh '''
-                docker compose up -d
-                '''
+                sh 'docker compose up -d'
             }
         }
 
         stage('Verify') {
             steps {
-                sh '''
-                docker ps
-                '''
+                sh 'docker ps'
             }
         }
     }
 
     post {
         success {
-            echo "✅ SUCCESS – Containers are running"
+            echo "✅ CI/CD SUCCESS – Containers running"
         }
         failure {
-            echo "❌ FAILED – Read the FIRST error above"
+            echo "❌ CI/CD FAILED"
         }
     }
 }
