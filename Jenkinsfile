@@ -3,17 +3,19 @@ pipeline {
 
     options {
         timestamps()
+        disableConcurrentBuilds()
     }
 
     stages {
 
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
+                echo "📥 Pulling latest code"
                 checkout scm
             }
         }
 
-        stage('Docker Check') {
+        stage('Docker Sanity Check') {
             steps {
                 sh '''
                 docker --version
@@ -22,31 +24,52 @@ pipeline {
             }
         }
 
-        stage('Build Images') {
+        stage('Stop Old Containers') {
             steps {
-                sh 'docker compose build'
+                echo "🛑 Stopping existing containers"
+                sh '''
+                docker compose down || true
+                '''
             }
         }
 
-        stage('Deploy Containers') {
+        stage('Build Frontend & Backend (NO CACHE)') {
             steps {
-                sh 'docker compose up -d'
+                echo "🏗️ Rebuilding frontend & backend images"
+                sh '''
+                docker compose build --no-cache frontend backend
+                '''
             }
         }
 
-        stage('Verify') {
+        stage('Start Containers') {
             steps {
-                sh 'docker ps'
+                echo "🚀 Deploying updated containers"
+                sh '''
+                docker compose up -d
+                '''
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                echo "🔍 Verifying running containers"
+                sh '''
+                docker ps
+                '''
             }
         }
     }
 
     post {
         success {
-            echo "✅ CI/CD SUCCESS – Containers running"
+            echo "✅ CI/CD SUCCESS – Frontend & Backend updated"
         }
         failure {
-            echo "❌ CI/CD FAILED"
+            echo "❌ CI/CD FAILED – Check logs above"
+        }
+        always {
+            echo "📄 Pipeline finished"
         }
     }
 }
