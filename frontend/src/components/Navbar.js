@@ -146,17 +146,7 @@ function Navbar() {
                   Admin Login
                 </Link>
               </motion.div>
-              </motion.div>
-              <motion.div custom={1} variants={linkVariants} initial="hidden" animate="visible">
-                <Link to="/old-age-homes" className="nav-link px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors">
-                  Donate to Masjids
-                </Link>
-              </motion.div>
-              <motion.div custom={2} variants={linkVariants} initial="hidden" animate="visible">
-                <Link to="/orphans" className="nav-link px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors">
-                  Donate to Madrasa
-                </Link>
-              </motion.div>
+              
             </>
           )}
         </div>
