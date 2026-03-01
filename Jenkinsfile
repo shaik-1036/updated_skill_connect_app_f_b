@@ -3,68 +3,48 @@ pipeline {
 
     options {
         timestamps()
-        disableConcurrentBuilds()
-    }
-
-    environment {
-        COMPOSE_FILE = "docker-compose.yml"
     }
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                echo "📥 Pulling code from GitHub"
                 checkout scm
             }
         }
 
-        stage('Validate Docker') {
+        stage('Debug') {
             steps {
-                echo "🐳 Checking Docker access"
-                sh 'docker --version'
-                sh 'docker compose version'
-            }
-        }
-
-        stage('Stop Existing Containers') {
-            steps {
-                echo "🛑 Stopping old containers (if any)"
-                sh 'docker compose down || true'
+                sh '''
+                whoami
+                pwd
+                ls -la
+                '''
             }
         }
 
         stage('Build Images') {
             steps {
-                echo "🏗️ Building Docker images"
-                sh 'docker compose build --no-cache'
+                sh '''
+                docker compose build
+                '''
             }
         }
 
-        stage('Deploy Application') {
+        stage('Deploy') {
             steps {
-                echo "🚀 Deploying application"
-                sh 'docker compose up -d'
+                sh '''
+                docker compose up -d
+                '''
             }
         }
 
-        stage('Verify Deployment') {
+        stage('Verify') {
             steps {
-                echo "🔍 Verifying running containers"
-                sh 'docker ps'
+                sh '''
+                docker ps
+                '''
             }
-        }
-    }
-
-    post {
-        success {
-            echo "✅ CI/CD Pipeline completed successfully"
-        }
-        failure {
-            echo "❌ CI/CD Pipeline failed"
-        }
-        always {
-            echo "📄 Pipeline finished"
         }
     }
 }
