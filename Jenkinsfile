@@ -1,37 +1,28 @@
 pipeline {
-    agent any
+    agent {
+        label 'built-in'
+    }
 
     options {
         timestamps()
     }
 
-    environment {
-        COMPOSE_FILE = "docker-compose.yml"
-    }
-
     stages {
 
-        stage('Checkout Code') {
+        stage('Sanity Check') {
             steps {
-                echo "📥 Checking out source code"
-                checkout scm
-            }
-        }
-
-        stage('Workspace Debug') {
-            steps {
-                echo "🔎 Debugging Jenkins workspace"
                 sh '''
+                echo "===== SYSTEM INFO ====="
                 whoami
+                uname -a
                 pwd
                 ls -la
                 '''
             }
         }
 
-        stage('Validate Docker') {
+        stage('Docker Check') {
             steps {
-                echo "🐳 Validating Docker access"
                 sh '''
                 docker --version
                 docker compose version
@@ -39,27 +30,24 @@ pipeline {
             }
         }
 
-        stage('Build Docker Images') {
+        stage('Build Images') {
             steps {
-                echo "🏗️ Building Docker images"
                 sh '''
                 docker compose build
                 '''
             }
         }
 
-        stage('Deploy Containers') {
+        stage('Run Containers') {
             steps {
-                echo "🚀 Starting containers"
                 sh '''
                 docker compose up -d
                 '''
             }
         }
 
-        stage('Verify Containers') {
+        stage('Verify') {
             steps {
-                echo "✅ Verifying running containers"
                 sh '''
                 docker ps
                 '''
@@ -69,13 +57,10 @@ pipeline {
 
     post {
         success {
-            echo "🎉 Pipeline completed successfully"
+            echo "✅ SUCCESS – Containers are running"
         }
         failure {
-            echo "❌ Pipeline failed — check logs above"
-        }
-        always {
-            echo "📄 Pipeline finished"
+            echo "❌ FAILED – Read the FIRST error above"
         }
     }
 }
