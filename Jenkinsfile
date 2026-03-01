@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     options {
-        timestamps()                      // show timestamps in logs
-        disableConcurrentBuilds()         // prevent parallel deployments
+        timestamps()
+        disableConcurrentBuilds()
     }
 
     environment {
@@ -22,36 +22,36 @@ pipeline {
         stage('Validate Docker') {
             steps {
                 echo "🐳 Checking Docker access"
-                bat 'docker version'
-                bat 'docker-compose version'
+                sh 'docker --version'
+                sh 'docker compose version'
             }
         }
 
         stage('Stop Existing Containers') {
             steps {
                 echo "🛑 Stopping old containers (if any)"
-                bat 'docker-compose down || exit 0'
+                sh 'docker compose down || true'
             }
         }
 
         stage('Build Images') {
             steps {
                 echo "🏗️ Building Docker images"
-                bat 'docker-compose build --no-cache'
+                sh 'docker compose build --no-cache'
             }
         }
 
         stage('Deploy Application') {
             steps {
                 echo "🚀 Deploying application"
-                bat 'docker-compose up -d'
+                sh 'docker compose up -d'
             }
         }
 
         stage('Verify Deployment') {
             steps {
                 echo "🔍 Verifying running containers"
-                bat 'docker ps'
+                sh 'docker ps'
             }
         }
     }
